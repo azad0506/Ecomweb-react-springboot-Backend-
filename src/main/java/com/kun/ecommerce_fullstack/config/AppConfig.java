@@ -36,7 +36,7 @@ public class AppConfig {
 				CorsConfiguration cfg=new CorsConfiguration();
 				cfg.setAllowedOriginPatterns(Arrays.asList(
 						"http://localhost:5173/",
-						"https://ecomweb-react-springboot.vercel.app/"
+						"https://ecomweb-react-springboot.vercel.app"
 						));
 				
 				cfg.setAllowedMethods(Collections.singletonList("*"));// Allows all HTTP methods (GET, POST, PUT, DELETE, etc.).
