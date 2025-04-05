@@ -34,8 +34,9 @@ public class AppConfig {
 			@Override
 			public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 				CorsConfiguration cfg=new CorsConfiguration();
-				cfg.setAllowedOriginPatterns(Arrays.asList(
-						"http://localhost:5173/",
+				
+				cfg.setAllowedOrigins(Arrays.asList(
+//						"http://localhost:5173/",
 						"https://ecomweb-react-springboot.vercel.app"
 						));
 				
