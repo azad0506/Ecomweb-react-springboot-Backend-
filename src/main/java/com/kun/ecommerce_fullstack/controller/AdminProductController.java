@@ -1,8 +1,11 @@
 package com.kun.ecommerce_fullstack.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,11 +41,11 @@ public class AdminProductController {
 	public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequest req){
 		
 		Product product=productService.createProduct(req);
-		
+		System.out.println("========");
 		return new ResponseEntity<Product>(product,HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/{rpductId}/delete")
+	@DeleteMapping("/deleteProduct/{productId}")
 	public ResponseEntity<AuthResponse> deleteProduct(@PathVariable Long productId) throws ProductException{
 		
 
@@ -50,17 +53,17 @@ public class AdminProductController {
 		
 		AuthResponse res=new AuthResponse();
 		
-		res.setMessage("order deleted successfully");
+		res.setMessage("product deleted successfully");
 //		res.setStatus(true);
 		return new ResponseEntity<AuthResponse>(res,HttpStatus.OK);
 		
 	}
 	
 	@GetMapping("/findAllProduct")
-	public ResponseEntity<List<Product>> findAllProductHandler() {
+	public ResponseEntity<Page<Product>> findAllProductHandler(Pageable pageable ) {
 
-		List<Product> products=productRepository.findAll();
-		return new ResponseEntity<List<Product>>(products, HttpStatus.ACCEPTED);
+		Page<Product> products=productRepository.findAll(pageable);
+		return new ResponseEntity<Page<Product>>(products, HttpStatus.ACCEPTED);
 	}
 	
 	@PutMapping("/{productId}/update")
@@ -73,10 +76,16 @@ public class AdminProductController {
 	}
 	
 	@PostMapping("/creates")
-	public ResponseEntity<AuthResponse> createMultipleProduct(@RequestBody CreateProductRequest[] req) {
+	public ResponseEntity<List<Product>> createMultipleProduct(@RequestBody List<CreateProductRequest>  multipleRequests) {
 		//TODO: process POST request
 		//11-> 12minute
-		return null;
+//		List<Product> products=new ArrayList<>();
+//		for(CreateProductRequest req:multipleRequests) {
+//			Product product=productService.createProduct(req);
+//			products.add(product);
+//		}
+		List<Product> products=productService.saveMultipleProducts(multipleRequests);
+		return new ResponseEntity<>(products,HttpStatus.CREATED);
 	}
 	
 }

@@ -10,7 +10,7 @@ import com.kun.ecommerce_fullstack.model.Review;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-	@Query("SELECT r FROM Rating r WHERE r.product.id = :productId")
+	@Query("SELECT r FROM Review r WHERE r.product.id = :productId")
    public List<Review> getAllReviewByProductId(@Param("productId") Long productId);
 
 }

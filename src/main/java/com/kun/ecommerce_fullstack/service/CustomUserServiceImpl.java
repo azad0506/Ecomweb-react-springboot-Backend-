@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,10 +28,17 @@ public class CustomUserServiceImpl implements UserDetailsService {
 		if(user==null) {
 			throw new UsernameNotFoundException("user not found with email"+username);
 		}
-		List<GrantedAuthority> authorities=new ArrayList<>();
+//		List<GrantedAuthority> authorities=new ArrayList<>();
+//		
+//		
+//		return new org.springframework.security.core.userdetails.User(user.getEmail(),user.getPassword(),authorities);
 		
-		
-		return new org.springframework.security.core.userdetails.User(user.getEmail(),user.getPassword(),authorities);
+		// ✅ Fix: Ab role list me bhej de
+		return new org.springframework.security.core.userdetails.User(
+			user.getEmail(),
+			user.getPassword(),
+			AuthorityUtils.createAuthorityList(user.getRole()) // ✅ bas ye line sahi hai
+		);
 	}
 
 	

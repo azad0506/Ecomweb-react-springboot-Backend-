@@ -31,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
 	public Product createProduct(CreateProductRequest req) {
 		// Find or create top-level category
 		Category topLevelCategory = categoryRepository.findByName(req.getToplavelCategory());
+		System.out.println("topLevelCategory"+topLevelCategory);
 
 		if (topLevelCategory == null) {
 			topLevelCategory = new Category();
@@ -39,12 +40,18 @@ public class ProductServiceImpl implements ProductService {
 
 			// save in db
 			topLevelCategory = categoryRepository.save(topLevelCategory);
+			System.err.println("topLevelCategory"+topLevelCategory);
 		}
 
 		// Find or create second-level category
-		Category secondLevelCategory = categoryRepository.findByNameAndParent(req.getSecondlavelCategory(),
-				topLevelCategory.getName());
-
+//		Category secondLevelCategory = categoryRepository.findByNameAndParent(req.getSecondlavelCategory(),
+//				topLevelCategory.getName());
+		// 2. Find or create second-level category
+		List<Category> secondLevelCategories = categoryRepository.findByNameAndParentId(
+		        req.getSecondlavelCategory(), topLevelCategory.getId());
+	        Category secondLevelCategory = secondLevelCategories.isEmpty() ? null : secondLevelCategories.get(0);
+	        
+			System.out.println("secondLevelCategory"+ secondLevelCategory);
 		if (secondLevelCategory == null) {
 			secondLevelCategory = new Category();
 			secondLevelCategory.setName(req.getSecondlavelCategory());
@@ -52,18 +59,26 @@ public class ProductServiceImpl implements ProductService {
 			secondLevelCategory.setLevel(2);
 
 			secondLevelCategory = categoryRepository.save(secondLevelCategory);
+			System.err.println("secondLevelCategory"+ secondLevelCategory);
 		}
 
-		Category thirdLevelCategory = categoryRepository.findByNameAndParent(req.getThirdelCategory(),
-				secondLevelCategory.getName());
+//		Category thirdLevelCategory = categoryRepository.findByNameAndParent(req.getThirdelCategory(),
+//				secondLevelCategory.getName());
+		 // Handle third-level category
+        List<Category> thirdLevelCategories = categoryRepository.findByNameAndParentId(
+                req.getThirdelCategory(), secondLevelCategory.getId());
+        Category thirdLevelCategory = thirdLevelCategories.isEmpty() ? null : thirdLevelCategories.get(0);
+		System.out.println("thirdLevelCategory"+ thirdLevelCategory);
 
 		if (thirdLevelCategory == null) {
 			thirdLevelCategory = new Category();
 			thirdLevelCategory.setName(req.getThirdelCategory());
-			thirdLevelCategory.setParentCategory(topLevelCategory);
+//			thirdLevelCategory.setParentCategory(topLevelCategory);
+			thirdLevelCategory.setParentCategory(secondLevelCategory);
 			thirdLevelCategory.setLevel(3);
 
 			thirdLevelCategory = categoryRepository.save(thirdLevelCategory);
+			System.err.println("thirdLevelCategory"+ thirdLevelCategory);
 		}
 
 		// Create Product entity
@@ -79,6 +94,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setColor(req.getColor());
 		product.setSize(req.getSizes()); // Assuming req.getSize() returns a Set<Size>
 		product.setImageUrl(req.getImageUrl());
+		
 		product.setCategory(thirdLevelCategory);
 
 		// Save product to database
@@ -114,6 +130,13 @@ public class ProductServiceImpl implements ProductService {
 		existingProduct.setImageUrl(updatedProduct.getImageUrl());
 		existingProduct.setCategory(updatedProduct.getCategory());
 
+		
+		// ✅ FIX: fetch full category before setting
+		Long categoryId=updatedProduct.getCategory().getId();
+	    Category category = categoryRepository.findById(categoryId)
+	        .orElseThrow(() -> new RuntimeException("Category not found"));
+	    existingProduct.setCategory(category);
+		
 		// Save the updated product
 		return productRepository.save(existingProduct);
 	}
@@ -134,7 +157,8 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public Page<Product> getAllProduct(String category, List<String> colors, List<String> size, Integer minPrice,
+	public Page<Product> getAllProduct(String category,String parentCategoryName,
+			List<String> colors, List<String> size, Integer minPrice,
 			Integer maxPrice, Integer minDiscount, String sort, String stock, Integer pageNumber, Integer pageSize) {
 		
 		
@@ -142,7 +166,7 @@ public class ProductServiceImpl implements ProductService {
 		Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
 		// Fetch filtered products from the repository
-		List<Product> products = productRepository.filterProduct(category, minPrice, maxPrice, minDiscount);
+		List<Product> products = productRepository.filterProduct(category,parentCategoryName, minPrice, maxPrice, minDiscount);
 
 		// Filter products by color
 		if (colors != null && !colors.isEmpty()) {
@@ -196,5 +220,115 @@ public class ProductServiceImpl implements ProductService {
 		
 		return filterTotalProducts;
 	}
+
+	
+	
+	
+	
+	
+	
+	
+	@Override
+	public List<Product> saveMultipleProducts(List<CreateProductRequest> requests) {
+	    List<Product> products = new ArrayList<>();
+
+	    for (CreateProductRequest req : requests) {
+	        // Handle top-level category
+	        Category topLevelCategory = categoryRepository.findByName(req.getToplavelCategory());
+			System.out.println("topLevelCategory"+topLevelCategory);
+
+	        if (topLevelCategory == null) {
+	            topLevelCategory = new Category();
+	            topLevelCategory.setName(req.getToplavelCategory());
+	            topLevelCategory.setLevel(1);
+	            topLevelCategory = categoryRepository.save(topLevelCategory);
+	            
+				System.err.println("topLevelCategory"+topLevelCategory);
+
+	        }
+
+	        // Handle second-level category
+	        List<Category> secondLevelCategories = categoryRepository.findByNameAndParentId(
+	                req.getSecondlavelCategory(), topLevelCategory.getId());
+	        
+	        Category secondLevelCategory = secondLevelCategories.isEmpty() ? null : secondLevelCategories.get(0);
+			System.out.println("secondLevelCategory"+ secondLevelCategory);
+
+	        if (secondLevelCategory == null) {
+	            secondLevelCategory = new Category();
+	            secondLevelCategory.setName(req.getSecondlavelCategory());
+	            secondLevelCategory.setParentCategory(topLevelCategory);
+	            secondLevelCategory.setLevel(2);
+	            secondLevelCategory = categoryRepository.save(secondLevelCategory);
+	            
+				System.err.println("secondLevelCategory"+ secondLevelCategory);
+
+	        }
+
+	        // Handle third-level category
+	        List<Category> thirdLevelCategories = categoryRepository.findByNameAndParentId(
+	                req.getThirdelCategory(), secondLevelCategory.getId());
+	        Category thirdLevelCategory = thirdLevelCategories.isEmpty() ? null : thirdLevelCategories.get(0);
+	        
+			System.out.println("thirdLevelCategory"+ thirdLevelCategory);
+
+	        
+	        if (thirdLevelCategory == null) {
+	            thirdLevelCategory = new Category();
+	            thirdLevelCategory.setName(req.getThirdelCategory());
+	            thirdLevelCategory.setParentCategory(secondLevelCategory);
+	            thirdLevelCategory.setLevel(3);
+	            thirdLevelCategory = categoryRepository.save(thirdLevelCategory);
+	    		System.err.println("thirdLevelCategory"+ thirdLevelCategory);
+
+	        }
+
+	        // Create the Product entity
+	        Product product = new Product();
+	        product.setTitle(req.getTitle());
+	        product.setDescription(req.getDescription());
+	        product.setPrice(req.getPrice());
+	        product.setDiscountPrice(req.getDiscountPrice());
+	        product.setDiscountPrsent(req.getDiscountpresent());
+	        product.setQuantity(req.getQuantity());
+	        product.setNumRating(0); // No ratings initially
+	        product.setBrand(req.getBrand());
+	        product.setColor(req.getColor());
+	        product.setSize(req.getSizes());
+	        product.setImageUrl(req.getImageUrl());
+	        product.setCategory(thirdLevelCategory);
+
+	        // Save product to database
+	        products.add(productRepository.save(product));
+	    }
+
+	    return products;
+	}
+
+	
+	 public List<Product> getProductsByParentCategory(String parentCategoryName) {
+	        return productRepository.findByParentCategoryName(parentCategoryName);
+	    }
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 //practice
+	 public List<Product> findProductsByTopLevelCategory(String topLevelCategoryName) {
+		    return productRepository.findByCategory_ParentCategory_ParentCategory_Name(topLevelCategoryName);
+		}
+	 
+
+	 public List<Product> findProductsBySecondLevelCategory(String name) {
+		 return productRepository.findByCategory_ParentCategory_Name(name);
+}
+
+	 public List<Product> findProductsByThirdLevelCategory(String name) {
+		 return productRepository.findByCategory_Name(name);
+}
 
 }

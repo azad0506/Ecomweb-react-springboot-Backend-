@@ -24,10 +24,24 @@ public class AppConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 		  .authorizeHttpRequests(Authorize -> Authorize
+				  
+//	
+				    .requestMatchers(
+				            "/api/toplevelcategory/**", // ✅ allow this endpoint publicly
+				            "/api/auth/**",                 // ✅ if you use login/signup
+				            "/api/public/**",              // ✅ optional: generic public APIs
+				            "/api/products/**"             // ✅ optional: public product APIs
+				        ).permitAll()
+		            
+				    // ✅ Role based check — yahi add karo!
+			        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+			        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+			        
+			        // ✅ Baaki /api/** sabko JWT chahiye  
 		      .requestMatchers("/api/**").authenticated()
 		      .anyRequest().permitAll()
 		  )
-		  .addFilterBefore(new JwtValidator(), BasicAuthenticationFilter.class) // Placeholder for a custom filter
+		  .addFilterBefore(new  JwtValidator(), BasicAuthenticationFilter.class) // Placeholder for a custom filter
 		  .csrf().disable()
 		  .cors().configurationSource(new CorsConfigurationSource() {
 			
@@ -35,8 +49,8 @@ public class AppConfig {
 			public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 				CorsConfiguration cfg=new CorsConfiguration();
 				
-				cfg.setAllowedOrigins(Arrays.asList(
-//						"http://localhost:5173/",
+				cfg.setAllowedOriginPatterns(Arrays.asList(
+						"http://localhost:5173",
 						"https://ecomweb-react-springboot.vercel.app"
 						));
 				

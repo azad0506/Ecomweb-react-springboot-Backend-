@@ -23,12 +23,32 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/*Ye bas user ko verify karta hai ki JWT valid hai
+ *  ya nahi aur is user ke paas kya role/authority hai.
+  // - HTTP request se JWT token uthata hai
+  // - Secret key se verify karta hai
+  // - JWT se username + authorities nikaalta hai
+  // - Authorities se Authentication banata hai
+  // - SecurityContextHolder mein set karta hai
+
+ */
+
 public class JwtValidator extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		 String path = request.getRequestURI();
+
+		    // ✅ Skip JWT validation for specific public paths
+		    if (path.startsWith("/api/toplevelcategory/**") ||
+		        path.startsWith("/api/auth") ||
+		        path.startsWith("/api/public") ||
+		        path.startsWith("/api/products")) {
+		        filterChain.doFilter(request, response); // skip JWT
+		        return;
+		    }
 		
 		String jwt=request.getHeader(JwtConstant.JWT_HEADER);
 		

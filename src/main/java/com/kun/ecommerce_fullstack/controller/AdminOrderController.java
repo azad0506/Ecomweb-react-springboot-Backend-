@@ -34,7 +34,7 @@ public class AdminOrderController {
 	}
 
 	@PutMapping("/{orderId}/confirmed")
-	public ResponseEntity<Order> confirmedOrderHandler(@PathVariable Long orderid,
+	public ResponseEntity<Order> confirmedOrderHandler(@PathVariable(name = "orderId") Long orderid,
 			@RequestHeader("Authorization") String jwt) throws OrderException {
 				
 		Order order=orderService.confirmedOrder(orderid);
@@ -43,7 +43,7 @@ public class AdminOrderController {
 	}
 	
 	@PutMapping("/{orderId}/shipped")
-	public ResponseEntity<Order> shippedOrderHandler(@PathVariable Long orderid,
+	public ResponseEntity<Order> shippedOrderHandler(@PathVariable(name = "orderId") Long orderid,
 			@RequestHeader("Authorization") String jwt) throws OrderException {
 				
 		Order order=orderService.shippedOrder(orderid);
@@ -52,7 +52,7 @@ public class AdminOrderController {
 	}
 	
 	@PutMapping("/{orderId}/deliver")
-	public ResponseEntity<Order> deliverOrderHandler(@PathVariable Long orderid,
+	public ResponseEntity<Order> deliverOrderHandler(@PathVariable(name = "orderId") Long orderid,
 			@RequestHeader("Authorization") String jwt) throws OrderException {
 				
 		Order order=orderService.deliveredOrder(orderid);
@@ -69,8 +69,8 @@ public class AdminOrderController {
 		return new ResponseEntity<>(order,HttpStatus.OK);
 	}
 	
-	@DeleteMapping("{orderId}/delete")
-	public ResponseEntity<AuthResponse> deleteOrderHandler(@PathVariable Long orderid,
+	@DeleteMapping("/{orderId}/deleteOrder")
+	public ResponseEntity<AuthResponse> deleteOrderHandler(@PathVariable(name ="orderId" ) Long orderid,
 			@RequestHeader("Authorization") String jwt) throws OrderException {
 		
 		orderService.deleteOrderById(orderid);
